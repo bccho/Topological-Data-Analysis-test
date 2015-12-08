@@ -19,16 +19,45 @@ sidelength = 28;
 labelIndices = labelIndices(sortedLabels == 2);
 ind = 1;
 
-%% Compute Betti intervals
-img = reshape_image(images(:, labelIndices(ind)), 0, false);
-[intervals, point_cloud] = BC_compute_intervals(img, 2, 10, 100, 1, 0.5, 4, 10000, false);
+%% Loop through all of one particular numeral
+chart_dim0 = 3;
+chart_dim1 = 3;
+betti_chart = cell(chart_dim0, chart_dim1);
+for ind = 1:length(labelIndices)
+    % Compute Betti intervals
+    img = reshape_image(images(:, labelIndices(ind)), 0, false);
+    [intervals, point_cloud] = BC_compute_intervals(img, 2, 10, 100, 1, 0.2, 4, 10000, false);
 
-%% Filter relevant intervals
-intervals_dim0 = BC_filter_relevant_intervals(intervals, 0);
-intervals_dim1 = BC_filter_relevant_intervals(intervals, 1);
-betti_numbers = [intervals_dim0.size, intervals_dim1.size];
+    % Filter relevant intervals
+    intervals_dim0 = BC_filter_relevant_intervals(intervals, 0, 2);
+    intervals_dim1 = BC_filter_relevant_intervals(intervals, 1, 1);
+    
+    % Compute Betti numbers and increment relevant position on chart
+    betti_numbers = [intervals_dim0.size, intervals_dim1.size];
+    betti_chart{betti_numbers(1)+1, betti_numbers(2)+1} = [betti_chart{betti_numbers(1)+1, betti_numbers(2)+1}, ind];
+    
+    disp([num2str(ind), ': ', num2str(betti_numbers)])
+end
 
 %% Display results
+for dim0 = 1:chart_dim0
+    for dim1 = 1:chart_dim1
+        arr = betti_chart{dim0, dim1};
+        n = length(arr);
+        if n > 0
+            nrows = floor(sqrt(n));
+            ncols = ceil(n / nrows);
+            
+            figure
+            for ii = 1:n
+                subplot(nrows,ncols,ii)
+                imagesc(reshape_image(images(:, labelIndices(arr(ii))), 0, false));
+                axis off
+                title(num2str(arr(ii)))
+            end
+        end
+    end
+end
 
 return
 % Show point cloud and image
