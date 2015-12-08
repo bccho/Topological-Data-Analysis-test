@@ -1,4 +1,4 @@
-function [intervals] = BC_compute_intervals(image, max_dimension, num_divisions, num_landmark_points, nu, threshold, init_MFV, max_stream_size)
+function [intervals] = BC_compute_intervals(image, max_dimension, num_divisions, num_landmark_points, nu, threshold, init_MFV, max_stream_size, show_messages)
 %BC_compute_intervals Computes Betti intervals given an image
 %   Default values:
 %       max_dimension = 3
@@ -8,9 +8,11 @@ function [intervals] = BC_compute_intervals(image, max_dimension, num_divisions,
 %       threshold = 0.5
 %       init_MFV = 6
 %       max_stream_size = 10000
+%       show_messages = false
 
 import edu.stanford.math.plex4.*;
 
+%% Default parameter values
 if ~exist('max_dimension', 'var') || isempty(max_dimension)
     max_dimension = 3;
 end
@@ -39,32 +41,45 @@ if ~exist('max_stream_size', 'var') || isempty(max_stream_size)
     max_stream_size = 10000;
 end
 
-% Prepare point cloud
+if ~exist('show_messages', 'var') || isempty(show_messages)
+    show_messages = false;
+end
+
+%% Prepare point cloud
 [row,col] = find(image > threshold); % threshold image
 point_cloud = [col, row];
-disp('Computed point cloud:'), disp(size(point_cloud))
+if show_messages
+    disp('Computed point cloud:'), disp(size(point_cloud))
+end
 
-% Set up for lazy witness stream: sequential min/max landmark selection
+%% Set up for lazy witness stream: sequential min/max landmark selection
 num_landmark_points = min(num_landmark_points, size(point_cloud,1));
 landmark_selector = api.Plex4.createMaxMinSelector(point_cloud, num_landmark_points);
-disp('Selected landmark points:');
 R = landmark_selector.getMaxDistanceFromPointsToLandmarks();
-disp(R)
+if show_messages
+    disp('Selected landmark points:');
+    disp(R)
+end
 max_filtration_value = init_MFV;
 
-% Set up stream
+%% Set up stream
 stream = streams.impl.LazyWitnessStream(landmark_selector.getUnderlyingMetricSpace(), landmark_selector, max_dimension, max_filtration_value, nu, num_divisions);
 stream.finalizeStream()
-disp('Created lazy witness stream:'), disp(stream.getSize())
+if show_messages
+    disp('Created lazy witness stream:'), disp(stream.getSize())
+end
 
-while (stream.getSize() > max_stream_size) % modify filtration value until it becomes reasonable
+% Modify max filtration value until it becomes reasonable
+while (stream.getSize() > max_stream_size)
     max_filtration_value = max_filtration_value * 0.9;
     stream = streams.impl.LazyWitnessStream(landmark_selector.getUnderlyingMetricSpace(), landmark_selector, max_dimension, max_filtration_value, nu, num_divisions);
     stream.finalizeStream()
-    disp(['Created lazy witness stream: MFV = ', num2str(max_filtration_value)]), disp(stream.getSize())
+    if show_messages
+        disp(['Created lazy witness stream: MFV = ', num2str(max_filtration_value)]), disp(stream.getSize())
+    end
 end
 
-% Compute intervals
+%% Compute intervals
 persistence = api.Plex4.getModularSimplicialAlgorithm(max_dimension, 2);
 intervals = persistence.computeIntervals(stream);
 
