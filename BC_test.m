@@ -6,43 +6,16 @@ if (~exist('labels', 'var'))
     labels = loadMNISTLabels('train-labels-idx1-ubyte');
 end
 
-disp('Loaded images')
-
 n = 1000;
 images = images(:, 1:n);
 labels = labels(1:n);
-[sortedLabels, labelIndices] = sort(labels);
 
-% Look at 2's:
-labelIndices = labelIndices(sortedLabels == 2);
 ind = 1;
 
-%% Compute Betti intervals:
-
 img = reshape_image(images(:, labelIndices(ind)), 0, false);
-intervals = BC_compute_intervals(img, 3, 10, 50, 1, 0.2, 4, 10000, false);
 
-%% Find relevant intervals:
-intervals_dim0 = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 0, 0);
-intervals_dim0_nt = intervals_dim0;
-if (~isempty(intervals_dim0)) % filter noise
-    intervals_dim0_nt = intervals_dim0(intervals_dim0(:,2) >= 2, :);
-end
-intervals_dim1 = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 1, 0);
-intervals_dim1_nt = intervals_dim1;
-if (~isempty(intervals_dim1))
-    intervals_dim1_nt = intervals_dim1(intervals_dim1(:,2) >= 1, :);
-end
-intervals_dim2 = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 2, 0);
-intervals_dim2_nt = intervals_dim2;
-if (~isempty(intervals_dim2))
-    intervals_dim2_nt = intervals_dim2(intervals_dim2(:,2) >= 1, :);
-end
 
 %% Display results
-disp(['Dim 0: ', num2str(size(intervals_dim0,1)), '; really ', num2str(size(intervals_dim0_nt,1))])
-disp(['Dim 1: ', num2str(size(intervals_dim1,1)), '; really ', num2str(size(intervals_dim1_nt,1))])
-disp(['Dim 2: ', num2str(size(intervals_dim2,1)), '; really ', num2str(size(intervals_dim2_nt,1))])
 
 % Show point cloud and image
 figure

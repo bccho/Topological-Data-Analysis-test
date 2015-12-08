@@ -1,4 +1,4 @@
-function [intervals] = BC_compute_intervals(image, max_dimension, num_divisions, num_landmark_points, nu, threshold, init_MFV, max_stream_size, show_messages)
+function [intervals, point_cloud] = BC_compute_intervals(image, max_dimension, num_divisions, num_landmark_points, nu, threshold, init_MFV, max_stream_size, show_messages)
 %BC_compute_intervals Computes Betti intervals given an image
 %   Default values:
 %       max_dimension = 3
