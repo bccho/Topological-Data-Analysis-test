@@ -18,41 +18,10 @@ labelIndices = labelIndices(sortedLabels == 2);
 ind = 1;
 
 %% Compute Betti intervals:
-max_dimension = 3;
-num_divisions = 10;
-num_landmark_points = 50;
-nu = 1;
 
-% Prepare point cloud
-img = reshape_image(images(:,labelIndices(ind)), 0, false);
-[row,col] = find(img > 0.5); % threshold image
-point_cloud = [col, row];
-disp('Computed point cloud:'), disp(size(point_cloud))
+img = reshape_image(images(:, labelIndices(ind)), 0, false);
+intervals = BC_compute_intervals(img, 3, 10, 50, 1, 0.2, 4, 10000);
 
-% Set up for lazy witness stream: sequential min/max landmark selection
-num_landmark_points = min(num_landmark_points, size(point_cloud,1));
-landmark_selector = api.Plex4.createMaxMinSelector(point_cloud, num_landmark_points);
-disp('Selected landmark points:');
-R = landmark_selector.getMaxDistanceFromPointsToLandmarks();
-disp(R)
-max_filtration_value = 6; %R * 6;
-
-% Set up stream
-stream = streams.impl.LazyWitnessStream(landmark_selector.getUnderlyingMetricSpace(), landmark_selector, max_dimension, max_filtration_value, nu, num_divisions);
-stream.finalizeStream()
-disp('Created lazy witness stream:'), disp(stream.getSize())
-
-while (stream.getSize() > 10000) % modify filtration value until it becomes reasonable
-    max_filtration_value = max_filtration_value * 0.9;
-    stream = streams.impl.LazyWitnessStream(landmark_selector.getUnderlyingMetricSpace(), landmark_selector, max_dimension, max_filtration_value, nu, num_divisions);
-    stream.finalizeStream()
-    disp(['Created lazy witness stream: MFV = ', num2str(max_filtration_value)]), disp(stream.getSize())
-end
-
-% Compute intervals
-persistence = api.Plex4.getModularSimplicialAlgorithm(max_dimension, 2);
-intervals = persistence.computeIntervals(stream);
-disp('Computed intervals:')
 intervals_dim0 = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 0, 0);
 intervals_dim0_nt = intervals_dim0;
 if (~isempty(intervals_dim0)) % filter noise
@@ -61,12 +30,12 @@ end
 intervals_dim1 = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 1, 0);
 intervals_dim1_nt = intervals_dim1;
 if (~isempty(intervals_dim1))
-    intervals_dim1_nt = intervals_dim1(intervals_dim1(:,2) >= 0.5, :);
+    intervals_dim1_nt = intervals_dim1(intervals_dim1(:,2) >= 1, :);
 end
 intervals_dim2 = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 2, 0);
 intervals_dim2_nt = intervals_dim2;
 if (~isempty(intervals_dim2))
-    intervals_dim2_nt = intervals_dim2(intervals_dim2(:,2) >= 0.5, :);
+    intervals_dim2_nt = intervals_dim2(intervals_dim2(:,2) >= 1, :);
 end
 
 % Display results

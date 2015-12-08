@@ -9,8 +9,6 @@ function [intervals] = BC_compute_intervals(image, max_dimension, num_divisions,
 %       init_MFV = 6
 %       max_stream_size = 10000
 
-import edu.stanford.math.plex4.*;
-
 if ~exist('max_dimension', 'var') || isempty(max_dimension)
     max_dimension = 3;
 end
@@ -35,12 +33,13 @@ if ~exist('init_MFV', 'var') || isempty(init_MFV)
     init_MFV = 6;
 end
 
-if ~exist('max_stream_size', 'var') || isempty(max_stream_size)
-    max_stream_size = 10000;
+if ~exist('max_stream_size', 'var') || isempty(init_MFV)
+    init_MFV = 6;
 end
 
 % Prepare point cloud
-[row,col] = find(image > threshold); % threshold image
+img = reshape_image(image, 0, false);
+[row,col] = find(img > threshold); % threshold image
 point_cloud = [col, row];
 disp('Computed point cloud:'), disp(size(point_cloud))
 
@@ -57,7 +56,7 @@ stream = streams.impl.LazyWitnessStream(landmark_selector.getUnderlyingMetricSpa
 stream.finalizeStream()
 disp('Created lazy witness stream:'), disp(stream.getSize())
 
-while (stream.getSize() > max_stream_size) % modify filtration value until it becomes reasonable
+while (stream.getSize() > 10000) % modify filtration value until it becomes reasonable
     max_filtration_value = max_filtration_value * 0.9;
     stream = streams.impl.LazyWitnessStream(landmark_selector.getUnderlyingMetricSpace(), landmark_selector, max_dimension, max_filtration_value, nu, num_divisions);
     stream.finalizeStream()

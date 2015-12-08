@@ -19,9 +19,7 @@ if ~exist('buf', 'var') || isempty(buf)
     buf = 1;
 end
 
-if ~exist('opt_colmajor', 'var') || isempty(opt_colmajor)
-    opt_colmajor = false;
-end
+opt_colmajor = false;
 
 % rescale
 A = A - mean(A(:));
