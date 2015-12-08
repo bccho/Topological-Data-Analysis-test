@@ -9,19 +9,20 @@ if (~exist('labels', 'var'))
 end
 
 % Save memory
-n = 1000;
+n = 200;
 images = images(:, 1:n);
 labels = labels(1:n);
 sidelength = 28;
 
 % Look at only particular numerals
 [sortedLabels, labelIndices] = sort(labels);
-labelIndices = labelIndices(sortedLabels == 2);
+labelIndices = labelIndices(sortedLabels == 7);
 ind = 1;
 
 %% Loop through all of one particular numeral
-chart_dim0 = 3;
-chart_dim1 = 3;
+chart_dim0 = 5;
+chart_dim1 = 5;
+betti_numbers = cell(length(labelIndices));
 betti_chart = cell(chart_dim0, chart_dim1);
 for ind = 1:length(labelIndices)
     % Compute Betti intervals
@@ -33,18 +34,21 @@ for ind = 1:length(labelIndices)
     intervals_dim1 = BC_filter_relevant_intervals(intervals, 1, 1);
     
     % Compute Betti numbers and increment relevant position on chart
-    betti_numbers = [intervals_dim0.size, intervals_dim1.size];
-    betti_chart{betti_numbers(1)+1, betti_numbers(2)+1} = [betti_chart{betti_numbers(1)+1, betti_numbers(2)+1}, ind];
+    bn = [size(intervals_dim0, 1), size(intervals_dim1, 1)];
+    betti_numbers{ind} = bn;
+    betti_chart{bn(1)+1, bn(2)+1} = [betti_chart{bn(1)+1, bn(2)+1}, ind];
     
-    disp([num2str(ind), ': ', num2str(betti_numbers)])
+    disp([num2str(ind), ': ', num2str(bn)])
 end
 
 %% Display results
+cnt = 0;
 for dim0 = 1:chart_dim0
     for dim1 = 1:chart_dim1
         arr = betti_chart{dim0, dim1};
         n = length(arr);
         if n > 0
+            cnt = cnt + 1;
             nrows = floor(sqrt(n));
             ncols = ceil(n / nrows);
             
@@ -55,11 +59,14 @@ for dim0 = 1:chart_dim0
                 axis off
                 title(num2str(arr(ii)))
             end
+            set(gcf,'name',num2str([dim0-1, dim1-1]),'numbertitle','off')
         end
     end
 end
+disp([num2str(cnt), ' types detected.'])
 
 return
+
 % Show point cloud and image
 figure
 subplot(1,2,1)
