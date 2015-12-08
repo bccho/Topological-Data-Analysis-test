@@ -16,10 +16,13 @@ sidelength = 28;
 
 % Look at only particular numerals
 [sortedLabels, labelIndices] = sort(labels);
-labelIndices = labelIndices(sortedLabels == 7);
+labelIndices = labelIndices(sortedLabels == 2);
 ind = 1;
 
 %% Loop through all of one particular numeral
+
+% Note: ** indicates the locations of arbitrary thresholds
+
 chart_dim0 = 5;
 chart_dim1 = 5;
 betti_numbers = cell(length(labelIndices));
@@ -27,11 +30,11 @@ betti_chart = cell(chart_dim0, chart_dim1);
 for ind = 1:length(labelIndices)
     % Compute Betti intervals
     img = reshape_image(images(:, labelIndices(ind)), 0, false);
-    [intervals, point_cloud] = BC_compute_intervals(img, 2, 10, 100, 1, 0.2, 4, 10000, false);
+    [intervals, point_cloud] = BC_compute_intervals(img, 2, 10, 100, 1, 0.5, 4, 10000, false); % **
 
     % Filter relevant intervals
-    intervals_dim0 = BC_filter_relevant_intervals(intervals, 0, 2);
-    intervals_dim1 = BC_filter_relevant_intervals(intervals, 1, 1);
+    intervals_dim0 = BC_filter_relevant_intervals(intervals, 0, 3); % **
+    intervals_dim1 = BC_filter_relevant_intervals(intervals, 1, 1); % **
     
     % Compute Betti numbers and increment relevant position on chart
     bn = [size(intervals_dim0, 1), size(intervals_dim1, 1)];
