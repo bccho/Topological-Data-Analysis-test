@@ -39,8 +39,8 @@ for ind = 1:length(labelIndices)
         [intervals, point_cloud] = BC_compute_intervals(img, 2, 10, 100, 1, thres, 4, 10000, false);
         
         % Filter relevant intervals
-        intervals_dim0 = BC_filter_relevant_intervals(intervals, 0, 2);
-        intervals_dim1 = BC_filter_relevant_intervals(intervals, 1, 1);
+        intervals_dim0 = BC_filter_relevant_intervals(intervals, 0, 0, 2);
+        intervals_dim1 = BC_filter_relevant_intervals(intervals, 1, 0, 1);
         
         % Compute Betti numbers and increment relevant position on chart
         bn = [size(intervals_dim0, 1), size(intervals_dim1, 1)];
